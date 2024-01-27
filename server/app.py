@@ -31,6 +31,7 @@ from models import (
     Deadlines,
     Vote,
     Party,
+    Partner,
 )
 
 # Views go here!
