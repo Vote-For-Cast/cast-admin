@@ -12,8 +12,10 @@ from config import app, db, api, migrate
 
 # Add your model imports
 from models import (
+    User,
     State,
     County,
+    Ballot,
     Voter,
     Admin,
     Account,

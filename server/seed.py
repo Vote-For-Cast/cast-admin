@@ -3,8 +3,10 @@
 # Local imports
 from config import db, app
 from models import (
+    User,
     State,
     County,
+    Ballot,
     Voter,
     Admin,
     Account,

@@ -10,14 +10,41 @@ from sqlalchemy_serializer import SerializerMixin
 # Platform Users and Enterprise Accounts
 
 
+class User(db.Model, SerializerMixin):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String)
+    role = db.Column(db.String, nullable=False)
+
+    # add relationships
+    voter = db.relationship("Voter", back_populates="user")
+    admin = db.relationship("Admin", back_populates="user")
+    voter_account = association_proxy("voter", "account")
+    admin_account = association_proxy("admin", "account")
+
+    # add serialization rules
+    serialize_rules = (
+        "-voter.user",
+        "-admin.user",
+        "-voter_account.user",
+        "-admin_account.user",
+    )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<User {self.username}>"
+
+
 class Voter(db.Model, SerializerMixin):
     __tablename__ = "voters"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"))
     name = db.Column(db.String)
-    username = db.Column(db.String, unique=True, nullable=False)
-    password = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
     street_line1 = db.Column(db.String)
@@ -45,8 +72,8 @@ class Admin(db.Model, SerializerMixin):
     __tablename__ = "admin"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     name = db.Column(db.String)
-    username = db.Column(db.String, unique=True, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String, db.ForeignKey("states.name"))
@@ -158,6 +185,28 @@ class Election(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Election {self.name}>"
+
+
+class Ballot(db.Model, SerializerMixin):
+    __tablename__ = "ballots"
+
+    id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
+    voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
+
+    # add relationships
+    election = db.relationship("Election", back_populates="ballots")
+    voter = db.relationship("Voter", back_populates="ballots")
+    polls = association_proxy("election", "polls")
+    propositions = association_proxy("election", "propositions")
+
+    # add serialization rules
+    serialize_rules = ("-election.ballots", "-voter.ballots")
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Ballot {self.name}>"
 
 
 class Poll(db.Model, SerializerMixin):
