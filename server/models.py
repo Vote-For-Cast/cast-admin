@@ -170,14 +170,16 @@ class Election(db.Model, SerializerMixin):
     # add relationships
     polls = db.relationship("Poll", back_populates="election")
     propositions = db.relationship("Proposition", back_populates="election")
+    ballots = db.relationship("Ballot", back_populates="election")
     candidates = association_proxy("polls", "candidates")
-    bills = association_proxy("propositions", "bills")
+    bills = association_proxy("propositions", "bill")
 
     # add serialization rules
     serialize_rules = (
         "-polls.election",
         "-propositions.election",
         "-candidates.election",
+        "-ballots.election",
         "-bills.election",
     )
 
@@ -214,6 +216,7 @@ class Poll(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
+    winner_id = db.Column(db.Integer, db.ForeignKey("candidates.id"), nullable=True)
     position = db.Column(db.String)
 
     # add relationships
