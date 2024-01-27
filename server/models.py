@@ -167,6 +167,8 @@ class Election(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     deadlines_id = db.Column(db.Integer, db.ForeignKey("election_deadlines.id"))
+    options_id = db.Column(db.Integer, db.ForeignKey("voting_options.id"))
+    overview = db.Column(db.String)
     election_type = db.Column(db.String, nullable=False)
     state = db.Column(db.String)
     county = db.Column(db.String)
@@ -196,6 +198,29 @@ class Election(db.Model, SerializerMixin):
         return f"<Election {self.name}>"
 
 
+class Options(db.Model, SerializerMixin):
+    __tablename__ = "voting_options"
+
+    id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
+    early_voting = db.Column(db.Boolean)
+    vote_by_mail = db.Column(db.Boolean)
+    in_person_voting = db.Column(db.Boolean)
+    mobile_voting = db.Column(db.Boolean)
+    online_voting = db.Column(db.Boolean)
+
+    # add relationships
+    election = db.relationship("Election", back_populates="options")
+
+    # add serialization rules
+    serialize_rules = ("-election.options",)
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Voting Option Set {self.id}>"
+
+
 class Deadlines(db.Model, SerializerMixin):
     __tablename__ = "election_deadlines"
 
@@ -208,6 +233,10 @@ class Deadlines(db.Model, SerializerMixin):
     mail_in_ballot_postmark_deadline = db.Column(db.Date)
     early_in_person_voting_opening = db.Column(db.Date)
     early_in_person_voting_deadline = db.Column(db.Date)
+    mobile_voting_opening = db.Column(db.Date)
+    mobile_voting_deadline = db.Column(db.Date)
+    online_voting_opening = db.Column(db.Date)
+    online_voting_deadline = db.Column(db.Date)
     in_person_election_date = db.Column(db.Date)
 
     # add relationships
