@@ -27,6 +27,10 @@ from models import (
     Poll,
     Proposition,
     Campaign,
+    Country,
+    Options,
+    Deadlines,
+    Vote,
 )
 
 # Views go here!

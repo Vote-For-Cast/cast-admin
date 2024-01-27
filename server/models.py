@@ -121,17 +121,40 @@ class Account(db.Model, SerializerMixin):
 # Platform Jurisdictions
 
 
-class State(db.Model, SerializerMixin):
-    __tablename__ = "states"
+class Country(db.Model, SerializerMixin):
+    __tablename__ = "countries"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, unique=True, nullable=False)
 
     # add relationships
+    states = db.relationship("State", back_populates="country")
+
+    # add serialization rules
+    serialize_rules = ("-states.country",)
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Country {self.name}>"
+
+
+class State(db.Model, SerializerMixin):
+    __tablename__ = "states"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, unique=True, nullable=False)
+    country_id = db.Column(db.Integer, db.ForeignKey("countries.id"), nullable=False)
+
+    # add relationships
+    country = db.relationship("Country", back_populates="states")
     counties = db.relationship("County", back_populates="state")
 
     # add serialization rules
-    serialize_rules = ("-counties.state",)
+    serialize_rules = (
+        "-counties.state",
+        "-country.states",
+    )
 
     # add validation
 
@@ -148,9 +171,10 @@ class County(db.Model, SerializerMixin):
 
     # add relationships
     state = db.relationship("State", back_populates="counties")
+    country = association_proxy("state", "country")
 
     # add serialization rules
-    serialize_rules = ("-state.counties",)
+    serialize_rules = ("-state.counties", "-country.counties")
 
     # add validation
 
@@ -174,6 +198,7 @@ class Election(db.Model, SerializerMixin):
     county = db.Column(db.String)
 
     # add relationships
+    options = db.relationship("Options", back_populates="election")
     deadlines = db.relationship("Deadlines", back_populates="election")
     polls = db.relationship("Poll", back_populates="election")
     propositions = db.relationship("Proposition", back_populates="election")
@@ -190,6 +215,7 @@ class Election(db.Model, SerializerMixin):
         "-ballots.election",
         "-bills.election",
         "-deadlines.election" "-voters.election",
+        "-options.election",
     )
 
     # add validation
