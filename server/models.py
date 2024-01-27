@@ -54,7 +54,7 @@ class Voter(db.Model, SerializerMixin):
     postal_code = db.Column(db.String)
     county = db.Column(db.String)
     country = db.Column(db.String)
-    affiliation = db.Column(db.String)
+    party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
 
     # add relationships
     votes = db.relationship("Vote", back_populates="voter")
@@ -368,7 +368,7 @@ class Candidate(db.Model, SerializerMixin):
     candidate_type = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.Integer)
-    affiliation = db.Column(db.String)
+    party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
     email = db.Column(db.String)
     phone = db.Column(db.String)
     website = db.Column(db.String)
@@ -474,6 +474,27 @@ class Bill(db.Model, SerializerMixin):
         return f"<Legislation {self.name}>"
 
 
+class Party(db.Model, SerializerMixin):
+    __tablename__ = "parties"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    overview = db.Column(db.String)
+
+    # add relationships
+    candidates = db.relationship("Candidate", back_populates="party")
+    representatives = db.relationship("Representative", back_populates="party")
+    voters = db.relationship("Voter", back_populates="party")
+
+    # add serialization rules
+    serialize_rules = ("-candidates.party", "-representatives.party", "-voters.party")
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Party {self.name}>"
+
+
 # Elected Officials
 
 
@@ -483,9 +504,10 @@ class Representative(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     rep_type = db.Column(db.String, nullable=False)
+    position = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.String)
-    affiliation = db.Column(db.String)
+    party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
     email = db.Column(db.String)
     phone = db.Column(db.String)
     website = db.Column(db.String)

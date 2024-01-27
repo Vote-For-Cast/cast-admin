@@ -30,6 +30,7 @@ from models import (
     Options,
     Deadlines,
     Vote,
+    Party,
 )
 
 # Views go here!

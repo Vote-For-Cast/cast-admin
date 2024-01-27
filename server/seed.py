@@ -21,6 +21,7 @@ from models import (
     Options,
     Deadlines,
     Vote,
+    Party,
 )
 
 # List of 50 US states and 3 real counties for each
