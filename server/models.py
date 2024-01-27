@@ -88,12 +88,12 @@ class Partner(db.Model, SerializerMixin):
     account = db.relationship("Account", back_populates="partners")
 
     # add serialization rules
-    serialize_rules = ("-voters.admin", "-account.admin")
+    serialize_rules = ("-account.partners",)
 
     # add validation
 
     def __repr__(self):
-        return f"<Admin {self.username}>"
+        return f"<Partner {self.username}>"
 
 
 class Admin(db.Model, SerializerMixin):
@@ -469,6 +469,8 @@ class Proposition(db.Model, SerializerMixin):
         "-election.propositions",
         "-bill.propositions",
         "-polls.propositions",
+        "-voters.propositions",
+        "-votes.propositions",
     )
 
     # add validation
