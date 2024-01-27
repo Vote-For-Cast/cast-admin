@@ -14,7 +14,6 @@ from models import (
     Candidate,
     Representative,
     Election,
-    Deadlines,
     Poll,
     Proposition,
     Campaign,
