@@ -454,9 +454,10 @@ class Winner(db.Model, SerializerMixin):
     # add relationships
     poll = db.relationship("Poll", back_populates="winners")
     candidate = db.relationship("Candidate", back_populates="winners")
+    election = association_proxy("poll", "election")
 
     # add serialization rules
-    serialize_rules = ("-poll.winners", "-candidate.winners")
+    serialize_rules = ("-poll.winners", "-candidate.winners", "-election.winners")
 
     # add validation
 
