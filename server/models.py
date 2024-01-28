@@ -84,9 +84,10 @@ class Partner(db.Model, SerializerMixin):
     # add relationships
     account = db.relationship("Account", back_populates="partners")
     guides = db.relationship("Guide", back_populates="partner")
+    ballots = association_proxy("guides", "ballot")
 
     # add serialization rules
-    serialize_rules = ("-account.partners", "-guides.partner")
+    serialize_rules = ("-account.partners", "-guides.partner", "-ballots.partner")
 
     # add validation
 
@@ -369,26 +370,22 @@ class Vote(db.Model, SerializerMixin):
     voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"), nullable=False)
-    poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"))
-    proposition_id = db.Column(db.Integer, db.ForeignKey("propositions.id"))
+    candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
+    bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
 
     # add relationships
     voter = db.relationship("Voter", back_populates="votes")
     partner = db.relationship("Partner", back_populates="votes")
     ballot = db.relationship("Ballot", back_populates="votes")
-    poll = db.relationship("Poll", back_populates="votes")
-    proposition = db.relationship("Proposition", back_populates="votes")
-    campaign = association_proxy("poll", "campaigns")
-    bill = association_proxy("proposition", "bill")
+    candidate = db.relationship("Candidate", back_populates="votes")
+    bill = db.relationship("Bill", back_populates="votes")
 
     # add serialization rules
     serialize_rules = (
         "-voter.votes",
         "-partner.votes",
         "-ballot.votes",
-        "-poll.votes",
-        "-proposition.votes",
-        "-campaign.votes",
+        "-candidate.votes",
         "-bill.votes",
     )
 
