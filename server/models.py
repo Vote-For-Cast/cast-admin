@@ -260,9 +260,11 @@ class Election(db.Model, SerializerMixin):
     polls = db.relationship("Poll", back_populates="election")
     propositions = db.relationship("Proposition", back_populates="election")
     ballots = db.relationship("Ballot", back_populates="election")
+    guides = db.relationship("Guide", back_populates="election")
+    votes = db.relationship("Vote", back_populates="election")
     candidates = association_proxy("polls", "candidates")
     bills = association_proxy("propositions", "bill")
-    voters = association_proxy("ballots", "voter")
+    voters = association_proxy("votes", "voter")
 
     # add serialization rules
     serialize_rules = (
@@ -270,9 +272,10 @@ class Election(db.Model, SerializerMixin):
         "-propositions.election",
         "-candidates.election",
         "-ballots.election",
-        "-bills.election",
+        "-guides.election" "-bills.election",
         "-deadlines.election" "-voters.election",
         "-options.election",
+        "-votes.election",
     )
 
     # add validation
@@ -367,26 +370,32 @@ class Vote(db.Model, SerializerMixin):
     __tablename__ = "votes"
 
     id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
     voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
-    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"), nullable=False)
     candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
     bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
 
     # add relationships
+    election = db.relationship("Election", back_populates="votes")
     voter = db.relationship("Voter", back_populates="votes")
-    partner = db.relationship("Partner", back_populates="votes")
     ballot = db.relationship("Ballot", back_populates="votes")
     candidate = db.relationship("Candidate", back_populates="votes")
     bill = db.relationship("Bill", back_populates="votes")
+    campaign = association_proxy("candidate", "campaigns")
+    proposition = association_proxy("bill", "propositions")
+    poll = association_proxy("campaign", "poll")
 
     # add serialization rules
     serialize_rules = (
+        "-election.votes",
         "-voter.votes",
-        "-partner.votes",
         "-ballot.votes",
         "-candidate.votes",
         "-bill.votes",
+        "-campaign.votes",
+        "-proposition.votes",
+        "-poll.votes",
     )
 
     # add validation
@@ -399,21 +408,19 @@ class Guide(db.Model, SerializerMixin):
     __tablename__ = "voter_guides"
 
     id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
-    ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"), nullable=False)
 
     # add relationships
     partner = db.relationship("Partner", back_populates="guides")
-    ballot = db.relationship("Ballot", back_populates="guides")
-    election = association_proxy("ballot", "election")
-    votes = association_proxy("ballot", "votes")
+    election = db.relationship("Election", back_populates="guides")
+    account = association_proxy("partner", "account")
 
     # add serialization rules
     serialize_rules = (
         "-election.guides",
         "-partner.guides",
-        "-ballot.guides",
-        "-votes.guides",
+        "-account.guides",
     )
 
 
@@ -538,16 +545,12 @@ class Proposition(db.Model, SerializerMixin):
     # add relationships
     election = db.relationship("Election", back_populates="propositions")
     bill = db.relationship("Bill", back_populates="propositions")
-    votes = db.relationship("Vote", back_populates="proposition")
-    polls = association_proxy("election", "polls")
-    voters = association_proxy("vote", "voters")
+    total_votes = association_proxy("election", "votes")
 
     # add serialization rules
     serialize_rules = (
         "-election.propositions",
         "-bill.propositions",
-        "-polls.propositions",
-        "-voters.propositions",
         "-votes.propositions",
     )
 
