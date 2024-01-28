@@ -16,6 +16,7 @@ class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     voter = db.relationship("Voter", back_populates="user")
@@ -156,6 +157,7 @@ class Account(db.Model, SerializerMixin):
     account_type = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     super_admin = db.relationship("SuperAdmin", back_populates="account")
@@ -253,6 +255,7 @@ class Election(db.Model, SerializerMixin):
     election_type = db.Column(db.String, nullable=False)
     state = db.Column(db.String)
     county = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     options = db.relationship("Options", back_populates="election")
@@ -350,6 +353,7 @@ class Ballot(db.Model, SerializerMixin):
     polling_location_2 = db.Column(db.String)
     polling_location_3 = db.Column(db.String)
     status = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     election = db.relationship("Election", back_populates="ballots")
@@ -376,6 +380,7 @@ class Vote(db.Model, SerializerMixin):
     candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
     representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
     bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     election = db.relationship("Election", back_populates="votes")
@@ -414,6 +419,7 @@ class Guide(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     partner = db.relationship("Partner", back_populates="guides")
