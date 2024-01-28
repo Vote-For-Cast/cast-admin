@@ -32,6 +32,9 @@ from models import (
     Vote,
     Party,
     Partner,
+    SuperAdmin,
+    Guide,
+    Term,
 )
 
 # Views go here!
