@@ -21,16 +21,14 @@ class User(db.Model, SerializerMixin):
     voter = db.relationship("Voter", back_populates="user")
     admin = db.relationship("Admin", back_populates="user")
     partner = db.relationship("Partner", back_populates="user")
-    voter_account = association_proxy("voter", "account")
-    admin_account = association_proxy("admin", "account")
+    account = db.relationship("Account", back_populates="user")
 
     # add serialization rules
     serialize_rules = (
         "-voter.user",
         "-admin.user",
         "-partner.user",
-        "-voter_account.user",
-        "-admin_account.user",
+        "-account.user",
     )
 
     # add validation
@@ -44,7 +42,6 @@ class Voter(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"))
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
@@ -110,7 +107,6 @@ class Admin(db.Model, SerializerMixin):
 
     # add relationships
     account = db.relationship("Account", back_populates="admin")
-    voters = association_proxy("account", "voters")
 
     # add serialization rules
     serialize_rules = ("-voters.admin", "-account.admin")
@@ -125,17 +121,23 @@ class Account(db.Model, SerializerMixin):
     __tablename__ = "accounts"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
     admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     account_photo = db.Column(db.String)
-    name = db.Column(db.String, unique=True, nullable=False)
+    account_name = db.Column(db.String, unique=True, nullable=False)
+    account_type = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.String)
 
     # add relationships
     admin = db.relationship("Admin", back_populates="account")
     partner = db.relationship("Partner", back_populates="account")
-    voters = db.relationship("Voter", back_populates="account")
+    voter = db.relationship("Voter", back_populates="account")
+    user = db.relationship("User", back_populates="account")
+    votes = association_proxy("voter", "votes")
+    ballots = association_proxy("voter", "ballots")
 
     # add serialization rules
     serialize_rules = ("-voters.account", "-partner.account", "-admin.account")
@@ -210,7 +212,7 @@ class County(db.Model, SerializerMixin):
         return f"<County {self.name}>"
 
 
-# Election Processes
+# Elections and Election Processes
 
 
 class Election(db.Model, SerializerMixin):
@@ -303,6 +305,9 @@ class Deadlines(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Election Deadline Set {self.id}>"
+
+
+# Ballots and Voting Processes
 
 
 class Ballot(db.Model, SerializerMixin):
@@ -504,6 +509,9 @@ class Bill(db.Model, SerializerMixin):
         return f"<Legislation {self.name}>"
 
 
+# Political Affiliations
+
+
 class Party(db.Model, SerializerMixin):
     __tablename__ = "parties"
 
@@ -548,6 +556,7 @@ class Representative(db.Model, SerializerMixin):
 
     # add relationships
     campaigns = db.relationship("Campaign", back_populates="representative")
+    terms = db.relationship("Term", back_populates="representative")
 
     # add serialization rules
     serialize_rules = ("-campaigns.representative",)
@@ -556,3 +565,24 @@ class Representative(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Representative {self.name}>"
+
+
+class Term(db.Model, SerializerMixin):
+    __tablename__ = "terms"
+
+    id = db.Column(db.Integer, primary_key=True)
+    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
+    term_start_date = db.Column(db.Date)
+    term_end_date = db.Column(db.Date)
+    term_length = db.Column(db.String)
+
+    # add relationships
+    representative = db.relationship("Representative", back_populates="terms")
+
+    # add serialization rules
+    serialize_rules = ("-representative.terms",)
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Term {self.id}>"
