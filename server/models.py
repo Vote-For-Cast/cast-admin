@@ -177,6 +177,7 @@ class Member(db.Model, SerializerMixin):
     team = db.relationship("Team", back_populates="members")
     admin = db.relationship("Admin", back_populates="members")
     partner = db.relationship("Partner", back_populates="members")
+    enterprise = association_proxy("team", "enterprise")
     account = association_proxy("user", "account")
 
     # add serialization rules
@@ -185,6 +186,7 @@ class Member(db.Model, SerializerMixin):
         "-admin.members",
         "-partner.members",
         "-account.members",
+        "-enterprise.members",
         "-user.members",
     )
 
@@ -226,12 +228,23 @@ class Enterprise(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"), unique=True)
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"), unique=True)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), unique=True)
     name = db.Column(db.String, unique=True, nullable=False)
     enterprise_type = db.Column(db.String)
 
     # add relationships
     admin = db.relationship("Admin", back_populates="enterprises")
     partner = db.relationship("Partner", back_populates="enterprises")
+    team = db.relationship("Team", back_populates="enterprises")
+    members = association_proxy("teams", "members")
+
+    # add serialization rules
+    serialize_rules = (
+        "-teams.enterprise",
+        "-admin.enterprise",
+        "-partner.enterprise",
+        "-members.enterprise",
+    )
 
 
 class Team(db.Model, SerializerMixin):
@@ -239,17 +252,15 @@ class Team(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     enterprise_id = db.Column(
-        db.Integer, db.ForeignKey("enterprises.id"), primary_key=True
+        db.Integer, db.ForeignKey("enterprises.id"), primary_key=True, unique=True
     )
-    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
-    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     name = db.Column(db.String, unique=True, nullable=False)
 
     # add relationships
     enterprise = db.relationship("Enterprise", back_populates="teams")
-    admin = db.relationship("Admin", back_populates="teams")
-    partner = db.relationship("Partner", back_populates="teams")
     members = db.relationship("Member", back_populates="team")
+    admin = association_proxy("enterprise", "admin")
+    partner = association_proxy("enterprise", "partner")
 
     # add serialization rules
     serialize_rules = (
