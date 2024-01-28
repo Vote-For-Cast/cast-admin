@@ -19,6 +19,7 @@ from models import (
     Voter,
     Admin,
     Account,
+    Enterprise,
     Team,
     Member,
     Bill,
