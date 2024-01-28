@@ -169,15 +169,13 @@ class Member(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), primary_key=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
-    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
 
     # add relationships
     user = db.relationship("User", back_populates="members")
     team = db.relationship("Team", back_populates="members")
-    admin = db.relationship("Admin", back_populates="members")
-    partner = db.relationship("Partner", back_populates="members")
     enterprise = association_proxy("team", "enterprise")
+    admin = association_proxy("team", "admin")
+    partner = association_proxy("team", "partner")
     account = association_proxy("user", "account")
 
     # add serialization rules
@@ -254,7 +252,6 @@ class Team(db.Model, SerializerMixin):
     enterprise_id = db.Column(
         db.Integer, db.ForeignKey("enterprises.id"), primary_key=True, unique=True
     )
-    name = db.Column(db.String, unique=True, nullable=False)
 
     # add relationships
     enterprise = db.relationship("Enterprise", back_populates="teams")
