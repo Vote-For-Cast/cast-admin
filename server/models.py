@@ -46,7 +46,13 @@ class Account(db.Model, SerializerMixin):
     __tablename__ = "accounts"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        unique=True,
+        primary_key=True,
+        nullable=False,
+    )
     account_type = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
