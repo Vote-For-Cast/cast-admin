@@ -20,7 +20,7 @@ from models import (
     Admin,
     Account,
     Enterprise,
-    Team,
+    Administration,
     Member,
     Bill,
     Candidate,
