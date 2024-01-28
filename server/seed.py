@@ -26,6 +26,7 @@ from models import (
     SuperAdmin,
     Guide,
     Term,
+    Winner,
 )
 
 # List of 50 US states and 3 real counties for each

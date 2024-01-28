@@ -422,13 +422,15 @@ class Poll(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
-    winner_id = db.Column(db.Integer, db.ForeignKey("candidates.id"), nullable=True)
     position = db.Column(db.String)
+    position_type = db.Column(db.String)
+    position_term = db.Column(db.String)
 
     # add relationships
     election = db.relationship("Election", back_populates="polls")
     campaigns = db.relationship("Campaign", back_populates="poll")
-    votes = db.relationship("Vote", back_populates="poll")
+    total_votes = db.relationship("Vote", back_populates="poll")
+    winners = db.relationship("Winner", back_populates="poll")
     candidates = association_proxy("campaigns", "candidate")
     voters = association_proxy("vote", "voters")
 
@@ -439,6 +441,27 @@ class Poll(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Poll {self.name}>"
+
+
+class Winner(db.Model, SerializerMixin):
+    __tablename__ = "winners"
+
+    poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"), primary_key=True)
+    candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
+    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
+    votes_received = db.Column(db.Integer)
+
+    # add relationships
+    poll = db.relationship("Poll", back_populates="winners")
+    candidate = db.relationship("Candidate", back_populates="winners")
+
+    # add serialization rules
+    serialize_rules = ("-poll.winners", "-candidate.winners")
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Winner {self.id}>"
 
 
 class Candidate(db.Model, SerializerMixin):

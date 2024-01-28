@@ -35,6 +35,7 @@ from models import (
     SuperAdmin,
     Guide,
     Term,
+    Winner,
 )
 
 # Views go here!
