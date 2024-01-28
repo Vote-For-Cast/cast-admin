@@ -484,6 +484,7 @@ class Candidate(db.Model, SerializerMixin):
 
     # add relationships
     campaigns = db.relationship("Campaign", back_populates="candidate")
+    wins = db.relationship("Winner", back_populates="candidate")
     polls = association_proxy("campaigns", "poll")
 
     # add serialization rules
@@ -628,7 +629,9 @@ class Representative(db.Model, SerializerMixin):
 
     # add relationships
     campaigns = db.relationship("Campaign", back_populates="representative")
+    wins = db.relationship("Winner", back_populates="representative")
     terms = db.relationship("Term", back_populates="representative")
+    polls = association_proxy("campaigns", "poll")
 
     # add serialization rules
     serialize_rules = ("-campaigns.representative",)
