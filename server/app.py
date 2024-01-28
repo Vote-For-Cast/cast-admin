@@ -45,6 +45,9 @@ def index():
     return "<h1>Project Server</h1>"
 
 
+# Resource Classes
+
+
 class Elections(Resource):
     def get(self):
         return make_response(
@@ -214,6 +217,9 @@ class PropositionsByElection(Resource):
             )
         else:
             return make_response({"error": "Propositions not found"}, 404)
+
+
+# API Resource Routing
 
 
 api.add_resource(Elections, "/elections")
