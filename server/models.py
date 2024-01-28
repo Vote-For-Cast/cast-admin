@@ -22,14 +22,18 @@ class User(db.Model, SerializerMixin):
     voter = db.relationship("Voter", back_populates="user")
     admin = db.relationship("Admin", back_populates="user")
     partner = db.relationship("Partner", back_populates="user")
+    super_admin = db.relationship("SuperAdmin", back_populates="user")
     account = db.relationship("Account", back_populates="user")
+    team = association_proxy("account", "team")
 
     # add serialization rules
     serialize_rules = (
         "-voter.user",
         "-admin.user",
         "-partner.user",
+        "-super_admin.user",
         "-account.user",
+        "-team.user",
     )
 
     # add validation
@@ -84,11 +88,17 @@ class Partner(db.Model, SerializerMixin):
 
     # add relationships
     account = db.relationship("Account", back_populates="partners")
+    team = db.relationship("Team", back_populates="partners")
     guides = db.relationship("Guide", back_populates="partner")
     ballots = association_proxy("guides", "ballot")
 
     # add serialization rules
-    serialize_rules = ("-account.partners", "-guides.partner", "-ballots.partner")
+    serialize_rules = (
+        "-account.partners",
+        "-team.partner",
+        "-guides.partner",
+        "-ballots.partner",
+    )
 
     # add validation
 
@@ -110,9 +120,10 @@ class Admin(db.Model, SerializerMixin):
 
     # add relationships
     account = db.relationship("Account", back_populates="admin")
+    team = db.relationship("Team", back_populates="admin")
 
     # add serialization rules
-    serialize_rules = ("-voters.admin", "-account.admin")
+    serialize_rules = ("-account.admin", "-team.admin")
 
     # add validation
 
@@ -152,6 +163,7 @@ class Account(db.Model, SerializerMixin):
     admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     super_admin_id = db.Column(db.Integer, db.ForeignKey("super_admin.id"))
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"))
     account_photo = db.Column(db.String)
     account_name = db.Column(db.String, unique=True, nullable=False)
     account_type = db.Column(db.String)
@@ -165,6 +177,7 @@ class Account(db.Model, SerializerMixin):
     partner = db.relationship("Partner", back_populates="account")
     voter = db.relationship("Voter", back_populates="account")
     user = db.relationship("User", back_populates="account")
+    team = db.relationship("Team", back_populates="account")
     votes = association_proxy("voter", "votes")
     ballots = association_proxy("voter", "ballots")
 
@@ -175,6 +188,56 @@ class Account(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Account {self.id}>"
+
+
+class Team(db.Model, SerializerMixin):
+    __tablename__ = "teams"
+
+    id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
+    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
+    name = db.Column(db.String, unique=True, nullable=False)
+    team_type = db.Column(db.String)
+
+    # add relationships
+    account = db.relationship("Account", back_populates="teams")
+    admin = db.relationship("Admin", back_populates="teams")
+    partner = db.relationship("Partner", back_populates="teams")
+
+    # add serialization rules
+    serialize_rules = ("-account.teams", "-admin.teams", "-partner.teams")
+
+
+class Member(db.Model, SerializerMixin):
+    __tablename__ = "members"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), primary_key=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
+    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
+
+    # add relationships
+    user = db.relationship("User", back_populates="members")
+    team = db.relationship("Team", back_populates="members")
+    admin = db.relationship("Admin", back_populates="members")
+    partner = db.relationship("Partner", back_populates="members")
+    account = association_proxy("team", "account")
+
+    # add serialization rules
+    serialize_rules = (
+        "-team.members",
+        "-admin.members",
+        "-partner.members",
+        "-account.members",
+        "-user.members",
+    )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Member {self.id}, Team: {self.team}>"
 
 
 # Platform Jurisdictions

@@ -10,6 +10,8 @@ from models import (
     Voter,
     Admin,
     Account,
+    Team,
+    Member,
     Bill,
     Candidate,
     Representative,
