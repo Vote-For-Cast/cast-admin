@@ -66,7 +66,7 @@ class Voter(db.Model, SerializerMixin):
     # add validation
 
     def __repr__(self):
-        return f"<Voter {self.username}>"
+        return f"<Voter {self.id}, {self.name}>"
 
 
 class Partner(db.Model, SerializerMixin):
@@ -92,7 +92,7 @@ class Partner(db.Model, SerializerMixin):
     # add validation
 
     def __repr__(self):
-        return f"<Partner {self.username}>"
+        return f"<Partner {self.name}>"
 
 
 class Admin(db.Model, SerializerMixin):
