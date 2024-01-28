@@ -83,9 +83,10 @@ class Partner(db.Model, SerializerMixin):
 
     # add relationships
     account = db.relationship("Account", back_populates="partners")
+    guides = db.relationship("Guide", back_populates="partner")
 
     # add serialization rules
-    serialize_rules = ("-account.partners",)
+    serialize_rules = ("-account.partners", "-guides.partner")
 
     # add validation
 
@@ -117,6 +118,29 @@ class Admin(db.Model, SerializerMixin):
         return f"<Admin {self.username}>"
 
 
+class SuperAdmin(db.Model, SerializerMixin):
+    __tablename__ = "super_admin"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    profile_photo = db.Column(db.String)
+    name = db.Column(db.String)
+    email = db.Column(db.String, unique=True, nullable=False)
+    phone = db.Column(db.String, unique=True)
+
+    # add relationships
+    account = db.relationship("Account", back_populates="super_admin")
+    user = db.relationship("User", back_populates="super_admin")
+
+    # add serialization rules
+    serialize_rules = ("-voters.admin", "-account.admin")
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Super Admin {self.username}>"
+
+
 class Account(db.Model, SerializerMixin):
     __tablename__ = "accounts"
 
@@ -125,6 +149,7 @@ class Account(db.Model, SerializerMixin):
     voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
     admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
+    super_admin_id = db.Column(db.Integer, db.ForeignKey("super_admin.id"))
     account_photo = db.Column(db.String)
     account_name = db.Column(db.String, unique=True, nullable=False)
     account_type = db.Column(db.String)
@@ -132,6 +157,7 @@ class Account(db.Model, SerializerMixin):
     county = db.Column(db.String)
 
     # add relationships
+    super_admin = db.relationship("SuperAdmin", back_populates="account")
     admin = db.relationship("Admin", back_populates="account")
     partner = db.relationship("Partner", back_populates="account")
     voter = db.relationship("Voter", back_populates="account")
@@ -340,13 +366,15 @@ class Vote(db.Model, SerializerMixin):
     __tablename__ = "votes"
 
     id = db.Column(db.Integer, primary_key=True)
-    voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"), nullable=False)
+    voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
+    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"), nullable=False)
     poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"))
     proposition_id = db.Column(db.Integer, db.ForeignKey("propositions.id"))
 
     # add relationships
     voter = db.relationship("Voter", back_populates="votes")
+    partner = db.relationship("Partner", back_populates="votes")
     ballot = db.relationship("Ballot", back_populates="votes")
     poll = db.relationship("Poll", back_populates="votes")
     proposition = db.relationship("Proposition", back_populates="votes")
@@ -356,6 +384,7 @@ class Vote(db.Model, SerializerMixin):
     # add serialization rules
     serialize_rules = (
         "-voter.votes",
+        "-partner.votes",
         "-ballot.votes",
         "-poll.votes",
         "-proposition.votes",
@@ -367,6 +396,28 @@ class Vote(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Vote {self.id}, {self.voter}>"
+
+
+class Guide(db.Model, SerializerMixin):
+    __tablename__ = "voter_guides"
+
+    id = db.Column(db.Integer, primary_key=True)
+    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
+    ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"), nullable=False)
+
+    # add relationships
+    partner = db.relationship("Partner", back_populates="guides")
+    ballot = db.relationship("Ballot", back_populates="guides")
+    election = association_proxy("ballot", "election")
+    votes = association_proxy("ballot", "votes")
+
+    # add serialization rules
+    serialize_rules = (
+        "-election.guides",
+        "-partner.guides",
+        "-ballot.guides",
+        "-votes.guides",
+    )
 
 
 class Poll(db.Model, SerializerMixin):
