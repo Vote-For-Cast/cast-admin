@@ -374,6 +374,7 @@ class Vote(db.Model, SerializerMixin):
     voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
     ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"), nullable=False)
     candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
+    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
     bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
 
     # add relationships
@@ -381,6 +382,7 @@ class Vote(db.Model, SerializerMixin):
     voter = db.relationship("Voter", back_populates="votes")
     ballot = db.relationship("Ballot", back_populates="votes")
     candidate = db.relationship("Candidate", back_populates="votes")
+    representative = db.relationship("Representative", back_populates="votes")
     bill = db.relationship("Bill", back_populates="votes")
     campaign = association_proxy("candidate", "campaigns")
     proposition = association_proxy("bill", "propositions")
