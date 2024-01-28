@@ -387,6 +387,7 @@ class Vote(db.Model, SerializerMixin):
     campaign = association_proxy("candidate", "campaigns")
     proposition = association_proxy("bill", "propositions")
     poll = association_proxy("campaign", "poll")
+    account = association_proxy("voter", "account")
 
     # add serialization rules
     serialize_rules = (
@@ -398,6 +399,7 @@ class Vote(db.Model, SerializerMixin):
         "-campaign.votes",
         "-proposition.votes",
         "-poll.votes",
+        "-account.votes",
     )
 
     # add validation
