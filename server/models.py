@@ -172,9 +172,8 @@ class Member(db.Model, SerializerMixin):
     enterprise = db.relationship("Enterprise", back_populates="member")
     administration = db.relationship("Admin", back_populates="member")
     user = association_proxy("account", "user")
-
     partner = association_proxy("enterprise", "partner")
-    account = association_proxy("user", "account")
+    admin = association_proxy("administration", "admin")
 
     # add serialization rules
     serialize_rules = (
@@ -208,6 +207,7 @@ class Admin(db.Model, SerializerMixin):
     account = db.relationship("Account", back_populates="admin")
     administration = db.relationship("Administration", back_populates="admin")
     members = association_proxy("administration", "members")
+    user = association_proxy("account", "user")
 
     # add serialization rules
     serialize_rules = ("-account.admin", "-administration.admin", "-members.admin")
@@ -366,6 +366,8 @@ class Election(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
+    super_admin_id = db.Column(db.Integer, db.ForeignKey("super_admin.id"))
     deadlines_id = db.Column(db.Integer, db.ForeignKey("election_deadlines.id"))
     options_id = db.Column(db.Integer, db.ForeignKey("voting_options.id"))
     overview = db.Column(db.String)
@@ -381,7 +383,9 @@ class Election(db.Model, SerializerMixin):
     propositions = db.relationship("Proposition", back_populates="election")
     ballots = db.relationship("Ballot", back_populates="election")
     guides = db.relationship("Guide", back_populates="election")
-    votes = db.relationship("Vote", back_populates="election")
+    admin = db.relationship("Admin", back_populates="elections")
+    super_admin = db.relationship("SuperAdmin", back_populates="elections")
+    votes = association_proxy("ballots", "votes")
     candidates = association_proxy("polls", "candidates")
     bills = association_proxy("propositions", "bill")
     voters = association_proxy("votes", "voter")
@@ -396,6 +400,8 @@ class Election(db.Model, SerializerMixin):
         "-deadlines.election" "-voters.election",
         "-options.election",
         "-votes.election",
+        "-admin.elections",
+        "-super_admin.elections",
     )
 
     # add validation
@@ -455,7 +461,7 @@ class Deadlines(db.Model, SerializerMixin):
         return f"<Election Deadline Set {self.id}>"
 
 
-# Ballots and Voting Processes
+# Ballots, Votes, and Voter Guides
 
 
 class Ballot(db.Model, SerializerMixin):
@@ -473,6 +479,7 @@ class Ballot(db.Model, SerializerMixin):
     # add relationships
     election = db.relationship("Election", back_populates="ballots")
     voter = db.relationship("Voter", back_populates="ballots")
+    votes = db.relationship("Vote", back_populates="ballot")
     polls = association_proxy("election", "polls")
     propositions = association_proxy("election", "propositions")
     account = association_proxy("voter", "account")
@@ -488,6 +495,7 @@ class Ballot(db.Model, SerializerMixin):
         "-propositions.ballots",
         "-deadlines.ballots",
         "-voting_options.ballots",
+        "-votes.ballots",
     )
 
     # add validation
@@ -544,13 +552,49 @@ class Guide(db.Model, SerializerMixin):
     # add relationships
     election = db.relationship("Election", back_populates="guides")
     enterprise = db.relationship("Enterprise", back_populates="guides")
+    recommendations = db.relationship("Recommendation", back_populates="guide")
+    campaigns = association_proxy("recommendations", "campaign")
+    propositions = association_proxy("recommendations", "proposition")
     partner = association_proxy("enterprise", "partner")
 
     # add serialization rules
     serialize_rules = (
         "-election.guides",
         "-enterprise.guides",
+        "-recommendations.guide",
+        "-campaigns.guide",
+        "-propositions.guide",
         "-partner.guides",
+    )
+
+
+class Recommendation(db.Model, SerializerMixin):
+    __tablename__ = "recommendations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    guide_id = db.Column(db.Integer, db.ForeignKey("voter_guides.id"), nullable=False)
+    campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"))
+    proposition_id = db.Column(db.Integer, db.ForeignKey("propositions.id"))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # add relationships
+    guide = db.relationship("Guide", back_populates="recommendations")
+    campaign = db.relationship("Campaign", back_populates="recommendations")
+    proposition = db.relationship("Proposition", back_populates="recommendations")
+    enterprise = association_proxy("guide", "enterprise")
+    bill = association_proxy("proposition", "bill")
+    candidate = association_proxy("campaign", "candidate")
+    representative = association_proxy("campaign", "representative")
+
+    # add serialization rules
+    serialize_rules = (
+        "-guide.recommendations",
+        "-enterprise.recommendations",
+        "-bill.recommendations",
+        "-candidate.recommendations",
+        "-representative.recommendations",
+        "-proposition.recommendations",
+        "-campaign.recommendations",
     )
 
 
@@ -569,13 +613,18 @@ class Poll(db.Model, SerializerMixin):
     # add relationships
     election = db.relationship("Election", back_populates="polls")
     campaigns = db.relationship("Campaign", back_populates="poll")
-    total_votes = db.relationship("Vote", back_populates="poll")
     winners = db.relationship("Winner", back_populates="poll")
     candidates = association_proxy("campaigns", "candidate")
-    voters = association_proxy("vote", "voters")
+    votes = association_proxy("campaigns", "votes")
 
     # add serialization rules
-    serialize_rules = ("-election.polls", "-candidates.poll", "-campaigns.poll")
+    serialize_rules = (
+        "-election.polls",
+        "-campaigns.poll",
+        "-candidates.poll",
+        "-votes.poll",
+        "-winners.poll",
+    )
 
     # add validation
 
@@ -597,7 +646,11 @@ class Campaign(db.Model, SerializerMixin):
     poll = db.relationship("Poll", back_populates="campaigns")
     candidate = db.relationship("Candidate", back_populates="campaigns")
     representative = db.relationship("Representative", back_populates="campaigns")
+    recommendations = db.relationship("Recommendation", back_populates="campaign")
+    votes = db.relationship("Vote", back_populates="campaign")
+    wins = db.relationship("Winner", back_populates="campaign")
     election = association_proxy("poll", "election")
+    voters = association_proxy("vote", "voters")
 
     # add serialization rules
     serialize_rules = (
@@ -605,6 +658,9 @@ class Campaign(db.Model, SerializerMixin):
         "-candidate.campaigns",
         "-representative.campaigns",
         "-election.campaigns",
+        "-recommendations.campaign",
+        "-votes.campaign",
+        "-voters.campaign",
     )
 
     # add validation
@@ -632,11 +688,17 @@ class Candidate(db.Model, SerializerMixin):
 
     # add relationships
     campaigns = db.relationship("Campaign", back_populates="candidate")
-    wins = db.relationship("Winner", back_populates="candidate")
     polls = association_proxy("campaigns", "poll")
+    wins = association_proxy("campaigns", "wins")
+    votes = association_proxy("campaigns", "votes")
 
     # add serialization rules
-    serialize_rules = ("-polls.candidates", "-campaigns.candidate")
+    serialize_rules = (
+        "-polls.candidates",
+        "-campaigns.candidate",
+        "-votes.candidate",
+        "-wins.candidate",
+    )
 
     # add validation
 
@@ -648,17 +710,25 @@ class Winner(db.Model, SerializerMixin):
     __tablename__ = "winners"
 
     poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"), primary_key=True)
-    candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
-    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
-    votes_received = db.Column(db.Integer)
+    campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), primary_key=True)
 
     # add relationships
     poll = db.relationship("Poll", back_populates="winners")
-    candidate = db.relationship("Candidate", back_populates="winners")
+    campaign = db.relationship("Campaign", back_populates="winners")
+    votes = association_proxy("campaign", "votes")
+    candidate = association_proxy("campaign", "candidate")
+    representative = association_proxy("campaign", "representative")
     election = association_proxy("poll", "election")
 
     # add serialization rules
-    serialize_rules = ("-poll.winners", "-candidate.winners", "-election.winners")
+    serialize_rules = (
+        "-poll.winners",
+        "-campaign.winners",
+        "-election.winners",
+        "-candidate.winners",
+        "-representative.winners",
+        "-votes.winners",
+    )
 
     # add validation
 
@@ -681,13 +751,15 @@ class Proposition(db.Model, SerializerMixin):
     # add relationships
     election = db.relationship("Election", back_populates="propositions")
     bill = db.relationship("Bill", back_populates="propositions")
-    total_votes = association_proxy("election", "votes")
+    recommendations = db.relationship("Recommendation", back_populates="proposition")
+    votes = db.relationship("Vote", back_populates="proposition")
 
     # add serialization rules
     serialize_rules = (
         "-election.propositions",
         "-bill.propositions",
         "-votes.propositions",
+        "-recommendations.proposition",
     )
 
     # add validation
@@ -743,10 +815,11 @@ class Representative(db.Model, SerializerMixin):
     photo = db.Column(db.String)
 
     # add relationships
-    campaigns = db.relationship("Campaign", back_populates="representative")
-    wins = db.relationship("Winner", back_populates="representative")
+    re_election_campaigns = db.relationship("Campaign", back_populates="representative")
     terms = db.relationship("Term", back_populates="representative")
     polls = association_proxy("campaigns", "poll")
+    wins = association_proxy("campaigns", "wins")
+    votes = association_proxy("campaigns", "votes")
 
     # add serialization rules
     serialize_rules = ("-campaigns.representative",)
@@ -761,13 +834,15 @@ class Term(db.Model, SerializerMixin):
     __tablename__ = "terms"
 
     id = db.Column(db.Integer, primary_key=True)
-    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
+    poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"))
+    representatives_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
     term_start_date = db.Column(db.Date)
     term_end_date = db.Column(db.Date)
     term_length = db.Column(db.String)
 
     # add relationships
     representative = db.relationship("Representative", back_populates="terms")
+    poll = db.relationship("Poll", back_populates="terms")
 
     # add serialization rules
     serialize_rules = ("-representative.terms",)
@@ -792,9 +867,17 @@ class Party(db.Model, SerializerMixin):
     candidates = db.relationship("Candidate", back_populates="party")
     representatives = db.relationship("Representative", back_populates="party")
     voters = db.relationship("Voter", back_populates="party")
+    challenger_campaigns = association_proxy("candidates", "campaigns")
+    reelection_campaigns = association_proxy("representatives", "campaigns")
 
     # add serialization rules
-    serialize_rules = ("-candidates.party", "-representatives.party", "-voters.party")
+    serialize_rules = (
+        "-candidates.party",
+        "-representatives.party",
+        "-voters.party",
+        "-challenger_campaigns.party",
+        "-reelection_campaigns.party",
+    )
 
     # add validation
 

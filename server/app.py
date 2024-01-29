@@ -39,6 +39,7 @@ from models import (
     Guide,
     Term,
     Winner,
+    Recommendation,
 )
 
 # Views go here!
