@@ -365,8 +365,8 @@ class Election(db.Model, SerializerMixin):
     __tablename__ = "elections"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
+    name = db.Column(db.String, nullable=False)
+    administration_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
     super_admin_id = db.Column(db.Integer, db.ForeignKey("super_admin.id"))
     deadlines_id = db.Column(db.Integer, db.ForeignKey("election_deadlines.id"))
     options_id = db.Column(db.Integer, db.ForeignKey("voting_options.id"))
@@ -383,7 +383,7 @@ class Election(db.Model, SerializerMixin):
     propositions = db.relationship("Proposition", back_populates="election")
     ballots = db.relationship("Ballot", back_populates="election")
     guides = db.relationship("Guide", back_populates="election")
-    admin = db.relationship("Admin", back_populates="elections")
+    administration = db.relationship("Admin", back_populates="elections")
     super_admin = db.relationship("SuperAdmin", back_populates="elections")
     votes = association_proxy("ballots", "votes")
     candidates = association_proxy("polls", "candidates")
@@ -400,7 +400,7 @@ class Election(db.Model, SerializerMixin):
         "-deadlines.election" "-voters.election",
         "-options.election",
         "-votes.election",
-        "-admin.elections",
+        "-administration.elections",
         "-super_admin.elections",
     )
 
