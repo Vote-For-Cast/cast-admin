@@ -392,10 +392,11 @@ class Election(db.Model, SerializerMixin):
     guides = db.relationship("Guide", back_populates="election")
     administration = db.relationship("Admin", back_populates="elections")
     super_admin = db.relationship("SuperAdmin", back_populates="elections")
+
+    voters = association_proxy("ballots", "voter")
     votes = association_proxy("ballots", "votes")
-    candidates = association_proxy("polls", "candidates")
+    campaigns = association_proxy("polls", "campaigns")
     bills = association_proxy("propositions", "bill")
-    voters = association_proxy("votes", "voter")
 
     # add serialization rules
     serialize_rules = (
