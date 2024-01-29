@@ -17,6 +17,7 @@ class User(db.Model, SerializerMixin):
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     account = db.relationship("Account", back_populates="user")
@@ -55,6 +56,7 @@ class Account(db.Model, SerializerMixin):
     )
     account_type = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     user = db.relationship("User", back_populates="account")
@@ -251,6 +253,8 @@ class Enterprise(db.Model, SerializerMixin):
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"), unique=True)
     name = db.Column(db.String, unique=True, nullable=False)
     enterprise_type = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     partner = db.relationship("Partner", back_populates="enterprise")
@@ -274,6 +278,8 @@ class Administration(db.Model, SerializerMixin):
     admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"), unique=True)
     name = db.Column(db.String, unique=True, nullable=False)
     administration_type = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     admin = db.relationship("Admin", back_populates="administration")
@@ -375,6 +381,7 @@ class Election(db.Model, SerializerMixin):
     state = db.Column(db.String)
     county = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     options = db.relationship("Options", back_populates="election")
@@ -475,6 +482,7 @@ class Ballot(db.Model, SerializerMixin):
     polling_location_3 = db.Column(db.String)
     status = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     election = db.relationship("Election", back_populates="ballots")
@@ -548,6 +556,7 @@ class Guide(db.Model, SerializerMixin):
     election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
     enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     election = db.relationship("Election", back_populates="guides")
@@ -711,6 +720,7 @@ class Winner(db.Model, SerializerMixin):
 
     poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"), primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), primary_key=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     poll = db.relationship("Poll", back_populates="winners")
