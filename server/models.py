@@ -854,7 +854,13 @@ class Representative(db.Model, SerializerMixin):
     votes = association_proxy("campaigns", "votes")
 
     # add serialization rules
-    serialize_rules = ("-campaigns.representative",)
+    serialize_rules = (
+        "-terms.representative",
+        "-re_election_campaigns.representative",
+        "-polls.representative",
+        "-wins.representative",
+        "-votes.representative",
+    )
 
     # add validation
 
@@ -879,7 +885,7 @@ class Term(db.Model, SerializerMixin):
     poll = db.relationship("Poll", back_populates="terms")
 
     # add serialization rules
-    serialize_rules = ("-representative.terms",)
+    serialize_rules = ("-representative.terms", "-poll.terms")
 
     # add validation
 
