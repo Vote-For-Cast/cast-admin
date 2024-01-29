@@ -836,6 +836,8 @@ class Term(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     poll_id = db.Column(db.Integer, db.ForeignKey("polls.id"))
     representatives_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
+    term_name = db.Column(db.String)
+    term_type = db.Column(db.String)
     term_start_date = db.Column(db.Date)
     term_end_date = db.Column(db.Date)
     term_length = db.Column(db.String)
