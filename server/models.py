@@ -109,12 +109,18 @@ class Voter(db.Model, SerializerMixin):
 
     # add relationships
     account = db.relationship("Account", back_populates="voter")
+    ballots = db.relationship("Ballot", back_populates="voter")
+    elections = association_proxy("ballots", "election")
+    votes = association_proxy("ballots", "votes")
     user = association_proxy("account", "user")
 
     # add serialization rules
     serialize_rules = (
         "-account.voter",
         "-user.voter",
+        "-ballots.voter",
+        "-elections.voter",
+        "-votes.voter",
     )
 
     # add validation
@@ -232,10 +238,15 @@ class SuperAdmin(db.Model, SerializerMixin):
 
     # add relationships
     user = db.relationship("User", back_populates="super_admin")
+    elections = db.relationship("Election", back_populates="super_admin")
     account = association_proxy("user", "account")
 
     # add serialization rules
-    serialize_rules = ("-account.super_admin", "-user.super_admin")
+    serialize_rules = (
+        "-account.super_admin",
+        "-user.super_admin",
+        "-elections.super_admin",
+    )
 
     # add validation
 
@@ -259,6 +270,8 @@ class Enterprise(db.Model, SerializerMixin):
     # add relationships
     partner = db.relationship("Partner", back_populates="enterprise")
     members = db.relationship("Member", back_populates="enterprise")
+    guides = db.relationship("Guide", back_populates="enterprise")
+    recommendations = association_proxy("guides", "recommendations")
     member_accounts = association_proxy("members", "account")
     partner_account = association_proxy("partner", "account")
 
@@ -266,9 +279,16 @@ class Enterprise(db.Model, SerializerMixin):
     serialize_rules = (
         "-partner.enterprise",
         "-members.enterprise",
+        "-guides.enterprise",
+        "-recommendations.enterprise",
         "-member_accounts.enterprise",
         "-partner_accounts.enterprise",
     )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Enterprise {self.name}>"
 
 
 class Administration(db.Model, SerializerMixin):
@@ -284,6 +304,7 @@ class Administration(db.Model, SerializerMixin):
     # add relationships
     admin = db.relationship("Admin", back_populates="administration")
     members = db.relationship("Member", back_populates="administration")
+    elections = db.relationship("Election", back_populates="administration")
     member_accounts = association_proxy("members", "account")
     admin_account = association_proxy("admin", "account")
 
