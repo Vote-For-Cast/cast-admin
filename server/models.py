@@ -997,28 +997,28 @@ class Follow(db.Model, SerializerMixin):
 
     # add relationships
     follower = db.relationship("Voter", back_populates="follows")
-    election_follow = db.relationship("Election", back_populates="follows")
-    bill_follow = db.relationship("Bill", back_populates="follows")
-    candidate_follow = db.relationship("Candidate", back_populates="follows")
-    representative_follow = db.relationship("Representative", back_populates="follows")
-    administration_follow = db.relationship("Administration", back_populates="follows")
-    enterprise_follow = db.relationship("Enterprise", back_populates="follows")
-    state_follow = db.relationship("State", back_populates="follows")
-    county_follow = db.relationship("County", back_populates="follows")
-    party_follow = db.relationship("Party", back_populates="follows")
+    election = db.relationship("Election", back_populates="follows")
+    bill = db.relationship("Bill", back_populates="follows")
+    candidate = db.relationship("Candidate", back_populates="follows")
+    representative = db.relationship("Representative", back_populates="follows")
+    administration = db.relationship("Administration", back_populates="follows")
+    enterprise = db.relationship("Enterprise", back_populates="follows")
+    state = db.relationship("State", back_populates="follows")
+    county = db.relationship("County", back_populates="follows")
+    party = db.relationship("Party", back_populates="follows")
 
     # add serialization rules
     serialize_rules = (
         "-follower.follows",
-        "-election_follow.follows",
-        "-bill_follow.follows",
-        "-candidate_follow.follows",
-        "-representative_follow.follows",
-        "-administration_follow.follows",
-        "-enterprise_follow.follows",
-        "-state_follow.follows",
-        "-county_follow.follows",
-        "-party_follow.follows",
+        "-election.follows",
+        "-bill.follows",
+        "-candidate.follows",
+        "-representative.follows",
+        "-administration.follows",
+        "-enterprise.follows",
+        "-state.follows",
+        "-county.follows",
+        "-party.follows",
     )
 
     # add validation
@@ -1031,6 +1031,8 @@ class Post(db.Model, SerializerMixin):
     __tablename__ = "posts"
 
     id = db.Column(db.Integer, primary_key=True)
+    post_type = db.Column(db.String)
+    content = db.Column(db.String)
 
     election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
     bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
@@ -1048,25 +1050,25 @@ class Post(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
-    election_post = db.relationship("Election", back_populates="posts")
-    bill_post = db.relationship("Bill", back_populates="posts")
-    candidate_post = db.relationship("Candidate", back_populates="posts")
-    representative_post = db.relationship("Representative", back_populates="posts")
-    administration_post = db.relationship("Administration", back_populates="posts")
-    enterprise_post = db.relationship("Enterprise", back_populates="posts")
-    state_post = db.relationship("State", back_populates="posts")
-    county_post = db.relationship("County", back_populates="posts")
-    party_post = db.relationship("Party", back_populates="posts")
+    election = db.relationship("Election", back_populates="posts")
+    bill = db.relationship("Bill", back_populates="posts")
+    candidate = db.relationship("Candidate", back_populates="posts")
+    representative = db.relationship("Representative", back_populates="posts")
+    administration = db.relationship("Administration", back_populates="posts")
+    enterprise = db.relationship("Enterprise", back_populates="posts")
+    state = db.relationship("State", back_populates="posts")
+    county = db.relationship("County", back_populates="posts")
+    party = db.relationship("Party", back_populates="posts")
 
     # add serialization rules
     serialize_rules = (
-        "-election_post.posts",
-        "-bill_post.posts",
-        "-candidate_post.posts",
-        "-representative_post.posts",
-        "-administration_post.posts",
-        "-enterprise_post.posts",
-        "-state_post.posts",
-        "-county_post.posts",
-        "-party_post.posts",
+        "-election.posts",
+        "-bill.posts",
+        "-candidate.posts",
+        "-representative.posts",
+        "-administration.posts",
+        "-enterprise.posts",
+        "-state.posts",
+        "-county.posts",
+        "-party.posts",
     )
