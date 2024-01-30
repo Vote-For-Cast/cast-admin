@@ -843,7 +843,7 @@ class Bill(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     code = db.Column(db.String)
-    categrory = db.Column(db.String)
+    category = db.Column(db.String)
     bill_type = db.Column(db.String)
     overview = db.Column(db.String)
     text = db.Column(db.String)
