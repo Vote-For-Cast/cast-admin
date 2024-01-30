@@ -274,6 +274,7 @@ class Enterprise(db.Model, SerializerMixin):
     members = db.relationship("Member", back_populates="enterprise")
     guides = db.relationship("Guide", back_populates="enterprise")
     follows = db.relationship("Follow", back_populates="enterprise")
+    feed_posts = db.relationship("Post", back_populates="enterprise")
     recommendations = association_proxy("guides", "recommendations")
     member_accounts = association_proxy("members", "account")
     partner_account = association_proxy("partner", "account")
@@ -287,6 +288,7 @@ class Enterprise(db.Model, SerializerMixin):
         "-member_accounts.enterprise",
         "-partner_accounts.enterprise",
         "-follows.enterprise",
+        "-feed_posts.enterprise",
     )
 
     # add validation
@@ -310,6 +312,7 @@ class Administration(db.Model, SerializerMixin):
     members = db.relationship("Member", back_populates="administration")
     elections = db.relationship("Election", back_populates="administration")
     follows = db.relationship("Follow", back_populates="administration")
+    feed_posts = db.relationship("Post", back_populates="administration")
     member_accounts = association_proxy("members", "account")
     admin_account = association_proxy("admin", "account")
 
@@ -321,6 +324,7 @@ class Administration(db.Model, SerializerMixin):
         "-admin_account.administration",
         "-elections.administration",
         "-follows.administration",
+        "-feed_posts.administration",
     )
 
 
@@ -360,12 +364,14 @@ class State(db.Model, SerializerMixin):
     country = db.relationship("Country", back_populates="states")
     counties = db.relationship("County", back_populates="state")
     follows = db.relationship("Follow", back_populates="state")
+    feed_posts = db.relationship("Post", back_populates="state")
 
     # add serialization rules
     serialize_rules = (
         "-counties.state",
         "-country.states",
         "-follows.state",
+        "-feed_posts.state",
     )
 
     # add validation
@@ -384,10 +390,16 @@ class County(db.Model, SerializerMixin):
     # add relationships
     state = db.relationship("State", back_populates="counties")
     follows = db.relationship("Follow", back_populates="county")
+    feed_posts = db.relationship("Post", back_populates="county")
     country = association_proxy("state", "country")
 
     # add serialization rules
-    serialize_rules = ("-state.counties", "-country.counties", "-follows.counties")
+    serialize_rules = (
+        "-state.counties",
+        "-country.counties",
+        "-follows.counties",
+        "-feed_posts.counties",
+    )
 
     # add validation
 
@@ -424,6 +436,7 @@ class Election(db.Model, SerializerMixin):
     administration = db.relationship("Admin", back_populates="elections")
     super_admin = db.relationship("SuperAdmin", back_populates="elections")
     follows = db.relationship("Follow", back_populates="election")
+    feed_posts = db.relationship("Post", back_populates="election")
 
     voters = association_proxy("ballots", "voter")
     votes = association_proxy("ballots", "votes")
@@ -443,6 +456,7 @@ class Election(db.Model, SerializerMixin):
         "-administration.elections",
         "-super_admin.elections",
         "-follows.election",
+        "-feed_posts.election",
     )
 
     # add validation
@@ -732,6 +746,7 @@ class Candidate(db.Model, SerializerMixin):
     # add relationships
     campaigns = db.relationship("Campaign", back_populates="candidate")
     follows = db.relationship("Follow", back_populates="candidate")
+    feed_posts = db.relationship("Post", back_populates="candidate")
     polls = association_proxy("campaigns", "poll")
     wins = association_proxy("campaigns", "wins")
     votes = association_proxy("campaigns", "votes")
@@ -743,6 +758,7 @@ class Candidate(db.Model, SerializerMixin):
         "-votes.candidate",
         "-wins.candidate",
         "-follows.candidate",
+        "-feed_posts.candidate",
     )
 
     # add validation
@@ -830,10 +846,16 @@ class Bill(db.Model, SerializerMixin):
     # add relationships
     propositions = db.relationship("Proposition", back_populates="bill")
     follows = db.relationship("Follow", back_populates="bill")
+    feed_posts = db.relationship("Post", back_populates="bill")
     elections = association_proxy("propositions", "election")
 
     # add serialization rules
-    serialize_rules = ("-proposition.bill", "-election.bill", "-follows.bill")
+    serialize_rules = (
+        "-proposition.bill",
+        "-election.bill",
+        "-follows.bill",
+        "-feed_posts.bill",
+    )
 
     # add validation
 
@@ -866,6 +888,7 @@ class Representative(db.Model, SerializerMixin):
     re_election_campaigns = db.relationship("Campaign", back_populates="representative")
     terms = db.relationship("Term", back_populates="representative")
     follows = db.relationship("Follow", back_populates="representative")
+    feed_posts = db.relationship("Post", back_populates="representative")
     polls = association_proxy("campaigns", "poll")
     wins = association_proxy("campaigns", "wins")
     votes = association_proxy("campaigns", "votes")
@@ -878,6 +901,7 @@ class Representative(db.Model, SerializerMixin):
         "-wins.representative",
         "-votes.representative",
         "-follows.representative",
+        "-feed_posts.representative",
     )
 
     # add validation
@@ -926,6 +950,7 @@ class Party(db.Model, SerializerMixin):
     representatives = db.relationship("Representative", back_populates="party")
     voters = db.relationship("Voter", back_populates="party")
     follows = db.relationship("Follow", back_populates="party")
+    feed_posts = db.relationship("Post", back_populates="party")
     challenger_campaigns = association_proxy("candidates", "campaigns")
     reelection_campaigns = association_proxy("representatives", "campaigns")
 
@@ -937,6 +962,7 @@ class Party(db.Model, SerializerMixin):
         "-challenger_campaigns.party",
         "-reelection_campaigns.party",
         "-follows.party",
+        "-feed_posts.party",
     )
 
     # add validation
@@ -999,3 +1025,48 @@ class Follow(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"<Follow {self.id}>"
+
+
+class Post(db.Model, SerializerMixin):
+    __tablename__ = "posts"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
+    bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
+    candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
+    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
+
+    administration_id = db.Column(db.Integer, db.ForeignKey("administrations.id"))
+    enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
+
+    state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
+    county_id = db.Column(db.Integer, db.ForeignKey("counties.id"))
+
+    party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # add relationships
+    election_post = db.relationship("Election", back_populates="posts")
+    bill_post = db.relationship("Bill", back_populates="posts")
+    candidate_post = db.relationship("Candidate", back_populates="posts")
+    representative_post = db.relationship("Representative", back_populates="posts")
+    administration_post = db.relationship("Administration", back_populates="posts")
+    enterprise_post = db.relationship("Enterprise", back_populates="posts")
+    state_post = db.relationship("State", back_populates="posts")
+    county_post = db.relationship("County", back_populates="posts")
+    party_post = db.relationship("Party", back_populates="posts")
+
+    # add serialization rules
+    serialize_rules = (
+        "-election_post.posts",
+        "-bill_post.posts",
+        "-candidate_post.posts",
+        "-representative_post.posts",
+        "-administration_post.posts",
+        "-enterprise_post.posts",
+        "-state_post.posts",
+        "-county_post.posts",
+        "-party_post.posts",
+    )

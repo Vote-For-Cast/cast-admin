@@ -41,6 +41,7 @@ from models import (
     Winner,
     Recommendation,
     Follow,
+    Post,
 )
 
 # Views go here!
