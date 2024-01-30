@@ -104,7 +104,14 @@ class Voter(db.Model, SerializerMixin):
     state = db.Column(db.String)
     postal_code = db.Column(db.String)
     county = db.Column(db.String)
+    district = db.Column(db.String)
     country = db.Column(db.String)
+    race = db.Column(db.String)
+    ethnicity = db.Column(db.String)
+    gender = db.Column(db.String)
+    veteran_status = db.Column(db.String)
+    birthdate = db.Column(db.Date)
+    voter_registration_status = db.Column(db.String)
     party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
 
     # add relationships
