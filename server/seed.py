@@ -31,6 +31,7 @@ from models import (
     Term,
     Winner,
     Recommendation,
+    Follow,
 )
 
 # List of 50 US states and 3 real counties for each

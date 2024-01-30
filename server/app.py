@@ -40,6 +40,7 @@ from models import (
     Term,
     Winner,
     Recommendation,
+    Follow,
 )
 
 # Views go here!
