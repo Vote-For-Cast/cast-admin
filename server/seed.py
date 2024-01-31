@@ -33,6 +33,7 @@ from models import (
     Recommendation,
     Follow,
     Post,
+    Notification,
 )
 
 # List of 50 US states and 3 real counties for each

@@ -1045,13 +1045,10 @@ class Post(db.Model, SerializerMixin):
     bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
     candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
     representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
-
     administration_id = db.Column(db.Integer, db.ForeignKey("administrations.id"))
     enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
-
     state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
     county_id = db.Column(db.Integer, db.ForeignKey("counties.id"))
-
     party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -1079,3 +1076,77 @@ class Post(db.Model, SerializerMixin):
         "-county.posts",
         "-party.posts",
     )
+
+
+class Notification(db.Model, SerializerMixin):
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True)
+    voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
+    admin_id = db.Column(db.Integer, db.ForeignKey("admins.id"))
+    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
+    member_id = db.Column(db.Integer, db.ForeignKey("members.id"))
+    super_admin_id = db.Column(db.Integer, db.ForeignKey("super_admin.id"))
+
+    notification_type = db.Column(db.String)
+    content = db.Column(db.String)
+
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
+    ballot_id = db.Column(db.Integer, db.ForeignKey("ballots.id"))
+    guide_id = db.Column(db.Integer, db.ForeignKey("voter_guides.id"))
+    bill_id = db.Column(db.Integer, db.ForeignKey("bills.id"))
+    candidate_id = db.Column(db.Integer, db.ForeignKey("candidates.id"))
+    representative_id = db.Column(db.Integer, db.ForeignKey("representatives.id"))
+    administration_id = db.Column(db.Integer, db.ForeignKey("administrations.id"))
+    enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
+    state_id = db.Column(db.Integer, db.ForeignKey("states.id"))
+    county_id = db.Column(db.Integer, db.ForeignKey("counties.id"))
+    party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # add relationships
+    voter = db.relationship("Voter", back_populates="notifications")
+    admin = db.relationship("Admin", back_populates="notifications")
+    partner = db.relationship("Partner", back_populates="notifications")
+    member = db.relationship("Member", back_populates="notifications")
+    super_admin = db.relationship("SuperAdmin", back_populates="notifications")
+    election = db.relationship("Election", back_populates="notifications")
+    ballot = db.relationship("Ballot", back_populates="notifications")
+    guide = db.relationship("Guide", back_populates="notifications")
+    bill = db.relationship("Bill", back_populates="notifications")
+    candidate = db.relationship("Candidate", back_populates="notifications")
+    representative = db.relationship("Representative", back_populates="notifications")
+    administration = db.relationship("Administration", back_populates="notifications")
+    enterprise = db.relationship("Enterprise", back_populates="notifications")
+    state = db.relationship("State", back_populates="notifications")
+    county = db.relationship("County", back_populates="notifications")
+    party = db.relationship("Party", back_populates="notifications")
+    post = db.relationship("Post", back_populates="notifications")
+
+    # add serialization rules
+    serialize_rules = (
+        "-voter.notifications",
+        "-election.notifications",
+        "-ballot.notifications",
+        "-guide.notifications",
+        "-bill.notifications",
+        "-candidate.notifications",
+        "-representative.notifications",
+        "-administration.notifications",
+        "-enterprise.notifications",
+        "-state.notifications",
+        "-county.notifications",
+        "-party.notifications",
+        "-post.notifications",
+        "-admin.notifications",
+        "-partner.notifications",
+        "-member.notifications",
+        "-super_admin.notifications",
+    )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Notification {self.id}>"

@@ -42,6 +42,7 @@ from models import (
     Recommendation,
     Follow,
     Post,
+    Notification,
 )
 
 # Views go here!
