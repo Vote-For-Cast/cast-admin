@@ -93,7 +93,9 @@ class Voter(db.Model, SerializerMixin):
     __tablename__ = "voters"
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), unique=True)
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
+    )
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
@@ -142,9 +144,12 @@ class Partner(db.Model, SerializerMixin):
     __tablename__ = "partners"
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), unique=True)
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
+    )
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
+    title = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
@@ -174,11 +179,14 @@ class Member(db.Model, SerializerMixin):
     __tablename__ = "members"
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), unique=True)
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
+    )
     enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
     administration_id = db.Column(db.Integer, db.ForeignKey("admins.id"))
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
+    title = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
@@ -212,9 +220,12 @@ class Admin(db.Model, SerializerMixin):
     __tablename__ = "admin"
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), unique=True)
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
+    )
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
+    title = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
@@ -239,9 +250,12 @@ class SuperAdmin(db.Model, SerializerMixin):
     __tablename__ = "super_admin"
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey("accounts.id"), unique=True)
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
+    )
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
+    title = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
 
@@ -270,7 +284,13 @@ class Enterprise(db.Model, SerializerMixin):
     __tablename__ = "enterprises"
 
     id = db.Column(db.Integer, primary_key=True)
-    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"), unique=True)
+    partner_id = db.Column(
+        db.Integer,
+        db.ForeignKey("partners.id"),
+        unique=True,
+        primary_key=True,
+        nullable=False,
+    )
     name = db.Column(db.String, unique=True, nullable=False)
     enterprise_type = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -308,7 +328,13 @@ class Administration(db.Model, SerializerMixin):
     __tablename__ = "administrations"
 
     id = db.Column(db.Integer, primary_key=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"), unique=True)
+    admin_id = db.Column(
+        db.Integer,
+        db.ForeignKey("admin.id"),
+        unique=True,
+        primary_key=True,
+        nullable=False,
+    )
     name = db.Column(db.String, unique=True, nullable=False)
     administration_type = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -438,6 +464,7 @@ class Election(db.Model, SerializerMixin):
     deadlines = db.relationship("Deadlines", back_populates="election")
     polls = db.relationship("Poll", back_populates="election")
     propositions = db.relationship("Proposition", back_populates="election")
+
     ballots = db.relationship("Ballot", back_populates="election")
     guides = db.relationship("Guide", back_populates="election")
     administration = db.relationship("Admin", back_populates="elections")
