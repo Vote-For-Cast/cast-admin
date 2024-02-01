@@ -115,6 +115,8 @@ class Voter(db.Model, SerializerMixin):
     birthdate = db.Column(db.Date)
     voter_registration_status = db.Column(db.String)
     party_id = db.Column(db.Integer, db.ForeignKey("parties.id"))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     account = db.relationship("Account", back_populates="voter")
@@ -154,6 +156,8 @@ class Partner(db.Model, SerializerMixin):
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
     county = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     account = db.relationship("Account", back_populates="partner")
@@ -191,6 +195,8 @@ class Member(db.Model, SerializerMixin):
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
     county = db.Column(db.String)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     account = db.relationship("Account", back_populates="member")
@@ -230,6 +236,9 @@ class Admin(db.Model, SerializerMixin):
     phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
     county = db.Column(db.String)
+    verifification_status = db.Column(db.Boolean)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     account = db.relationship("Account", back_populates="admin")
@@ -258,6 +267,8 @@ class SuperAdmin(db.Model, SerializerMixin):
     title = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String, unique=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
     # add relationships
     user = db.relationship("User", back_populates="super_admin")
@@ -293,6 +304,7 @@ class Enterprise(db.Model, SerializerMixin):
     )
     name = db.Column(db.String, unique=True, nullable=False)
     enterprise_type = db.Column(db.String)
+    website = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
@@ -337,6 +349,8 @@ class Administration(db.Model, SerializerMixin):
     )
     name = db.Column(db.String, unique=True, nullable=False)
     administration_type = db.Column(db.String)
+    website = db.Column(db.String)
+    verifification_status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
