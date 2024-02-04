@@ -187,7 +187,7 @@ class Member(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
-    administration_id = db.Column(db.Integer, db.ForeignKey("admins.id"))
+    administration_id = db.Column(db.Integer, db.ForeignKey("administrations.id"))
     profile_photo = db.Column(db.String)
     name = db.Column(db.String)
     title = db.Column(db.String)
@@ -1124,7 +1124,7 @@ class Notification(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     voter_id = db.Column(db.Integer, db.ForeignKey("voters.id"))
-    admin_id = db.Column(db.Integer, db.ForeignKey("admins.id"))
+    admin_id = db.Column(db.Integer, db.ForeignKey("admin.id"))
     partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"))
     member_id = db.Column(db.Integer, db.ForeignKey("members.id"))
     super_admin_id = db.Column(db.Integer, db.ForeignKey("super_admin.id"))

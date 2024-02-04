@@ -1,1 +1,0 @@
-ROBOTSTXT_OBEY = True
