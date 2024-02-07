@@ -15,6 +15,7 @@ from models import (
     User,
     State,
     County,
+    City,
     Ballot,
     Voter,
     Admin,

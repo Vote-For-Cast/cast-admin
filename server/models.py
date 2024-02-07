@@ -454,6 +454,33 @@ class County(db.Model, SerializerMixin):
         return f"<County {self.name}>"
 
 
+class City(db.Model, SerializerMixin):
+    __tablename__ = "cities"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    county_id = db.Column(db.Integer, db.ForeignKey("counties.id"), nullable=False)
+
+    # add relationships
+    county = db.relationship("County", back_populates="cities")
+    follows = db.relationship("Follow", back_populates="city")
+    feed_posts = db.relationship("Post", back_populates="city")
+    state = association_proxy("county", "state")
+
+    # add serialization rules
+    serialize_rules = (
+        "-county.cities",
+        "-follows.cities",
+        "-feed_posts.cities",
+        "-state.cities",
+    )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<City {self.name}>"
+
+
 # Elections and Election Information
 
 
