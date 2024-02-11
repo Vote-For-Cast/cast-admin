@@ -14,7 +14,9 @@ class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True, nullable=False)
+    name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    phone = db.Column(db.String, unique=True)
     password = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
@@ -97,9 +99,6 @@ class Voter(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
-    name = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    phone = db.Column(db.String, unique=True)
     street_line1 = db.Column(db.String)
     street_line2 = db.Column(db.String)
     city = db.Column(db.String)
@@ -150,10 +149,7 @@ class Partner(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
-    name = db.Column(db.String)
     title = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
     county = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -189,10 +185,7 @@ class Member(db.Model, SerializerMixin):
     enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
     administration_id = db.Column(db.Integer, db.ForeignKey("administrations.id"))
     profile_photo = db.Column(db.String)
-    name = db.Column(db.String)
     title = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
     county = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -230,13 +223,9 @@ class Admin(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
-    name = db.Column(db.String)
     title = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    phone = db.Column(db.String, unique=True)
     state = db.Column(db.String)
     county = db.Column(db.String)
-    verifification_status = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
@@ -263,10 +252,7 @@ class SuperAdmin(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
-    name = db.Column(db.String)
     title = db.Column(db.String)
-    email = db.Column(db.String, unique=True, nullable=False)
-    phone = db.Column(db.String, unique=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
 
@@ -412,6 +398,7 @@ class State(db.Model, SerializerMixin):
     counties = db.relationship("County", back_populates="state")
     follows = db.relationship("Follow", back_populates="state")
     feed_posts = db.relationship("Post", back_populates="state")
+    cities = association_proxy("counties", "cities")
 
     # add serialization rules
     serialize_rules = (
@@ -419,6 +406,7 @@ class State(db.Model, SerializerMixin):
         "-country.states",
         "-follows.state",
         "-feed_posts.state",
+        "-cities.state",
     )
 
     # add validation
