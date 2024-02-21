@@ -298,6 +298,7 @@ class Enterprise(db.Model, SerializerMixin):
     partner = db.relationship("Partner", back_populates="enterprise")
     members = db.relationship("Member", back_populates="enterprise")
     guides = db.relationship("Guide", back_populates="enterprise")
+    endorsements = db.relationship("Endorsement", back_populates="enterprise")
     follows = db.relationship("Follow", back_populates="enterprise")
     feed_posts = db.relationship("Post", back_populates="enterprise")
     recommendations = association_proxy("guides", "recommendations")
@@ -314,6 +315,7 @@ class Enterprise(db.Model, SerializerMixin):
         "-partner_accounts.enterprise",
         "-follows.enterprise",
         "-feed_posts.enterprise",
+        "-endorsements.enterprise",
     )
 
     # add validation
@@ -687,6 +689,11 @@ class Guide(db.Model, SerializerMixin):
         "-partner.guides",
     )
 
+    # add validation
+
+    def __repr__(self):
+        return f"<Voter Guide {self.id}>"
+
 
 class Recommendation(db.Model, SerializerMixin):
     __tablename__ = "recommendations"
@@ -716,6 +723,49 @@ class Recommendation(db.Model, SerializerMixin):
         "-proposition.recommendations",
         "-campaign.recommendations",
     )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Recommendation {self.id}>"
+
+
+class Endorsement(db.Model, SerializerMixin):
+    __tablename__ = "endorsements"
+
+    id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey("elections.id"))
+    enterprise_id = db.Column(
+        db.Integer, db.ForeignKey("enterprises.id"), nullable=False
+    )
+    campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"))
+    proposition_id = db.Column(db.Integer, db.ForeignKey("propositions.id"))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # add relationships
+    election = db.relationship("Election", back_populates="endorsements")
+    enterprise = db.relationship("Enterprise", back_populates="endorsements")
+    campaign = db.relationship("Campaign", back_populates="endorsements")
+    proposition = db.relationship("Proposition", back_populates="endorsements")
+    partner = association_proxy("enterprise", "partner")
+    candidate = association_proxy("campaign", "candidate")
+    bill = association_proxy("proposition", "bill")
+
+    # add serialization rules
+    serialize_rules = (
+        "-partner.endorsements",
+        "-campaign.endorsements",
+        "-proposition.endorsements",
+        "-bill.endorsements",
+        "-candidate.endorsements",
+        "-enterprise.endorsements",
+        "-election.endorsements",
+    )
+
+    # add validation
+
+    def __repr__(self):
+        return f"<Endorsement {self.id}>"
 
 
 # Candidates and Campaign Processes
