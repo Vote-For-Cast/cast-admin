@@ -117,115 +117,99 @@ class ElectionById(Resource):
             return make_response({"error": "Election not found"}, 404)
 
 
-class Representatives(Resource):
+class Users(Resource):
     def get(self):
-        return make_response(
-            [representative.to_dict() for representative in Representative.query.all()],
-            200,
-        )
+        return make_response([user.to_dict() for user in User.query.all()], 200)
 
     def post(self):
-        data = request.get_json()
-        representative = Representative()
+        user_data = request.get_json()
         try:
-            representative.name = data["name"]
-            representative.rep_type = data["rep_type"]
-            representative.state = data["state"]
-            representative.county = data["county"]
-            representative.affiliation = data["affiliation"]
-            db.session.add(representative)
-            db.session.commit()
-            return make_response(representative.to_dict(), 201)
-        except ValueError:
-            return make_response({"error": "Invalid representative"}, 400)
-
-
-class RepresentativesByState(Resource):
-    def get(self, state):
-        representatives = Representative.query.filter_by(state=state).all()
-        if representatives:
-            return make_response(
-                [representative.to_dict() for representative in representatives],
-                200,
+            new_user = User(
+                username=user_data["username"],
+                email=user_data["email"],
+                password=user_data["password"],
             )
-        else:
-            return make_response({"error": "Representatives not found"}, 404)
+            new_user.password = user_data["password"]
+            db.session.add(new_user)
+            commit_session(db.session)
+
+            return make_response({"message": "User created successfully"}, 201)
+        except IntegrityError as e:
+            db.session.rollback()
+            if "UNIQUE constraint failed" in str(e):
+                return make_response(
+                    {"error": "Username or email already exists."}, 409
+                )
+            else:
+                return make_response({"error": "Database integrity error."}, 500)
+
+        except Exception as error:
+            db.session.rollback()
+            return make_response({"error": "User creation failed: " + str(error)}, 500)
+
+    def delete(self):
+        try:
+            data = request.get_json()
+            if not all(key in data for key in ("username", "password")):
+                return make_response(
+                    {"error": "Username and password are required"}, 400
+                )
+
+            username = data["username"]
+            password = data["password"]
+
+            user = User.query.filter_by(username=username).first()
+
+            if user and user.authenticate(password):
+                user_to_delete = user
+                db.session.delete(user_to_delete)
+                commit_session(db.session)
+                return make_response({"message": "User deleted successfully"}, 200)
+            else:
+                return make_response({"error": "Invalid credentials"}, 401)
+        except Exception as error:
+            return make_response({"error": str(error)}, 500)
+
+    def patch(self):
+        data = request.get_json()
+        try:
+            if not all(key in data for key in ("username", "password", "newPassword")):
+                return make_response({"error": "Required fields are missing"}, 400)
+
+            username = data["username"]
+            password = data["password"]
+            new_password = data["newPassword"]
+
+            user = User.query.filter_by(username=username).first()
+
+            if user and user.authenticate(password):
+                user.password = new_password
+                commit_session(db.session)
+                return make_response({"message": "Password updated successfully"}, 200)
+            else:
+                return make_response({"error": "Invalid credentials"}, 401)
+        except Exception as error:
+            return make_response({"error": str(error)}, 500)
 
 
-class Bills(Resource):
-    def get(self):
-        return make_response(
-            [bill.to_dict() for bill in Bill.query.all()],
-            200,
-        )
-
+class Login(Resource):
     def post(self):
         data = request.get_json()
-        bill = Bill()
-        try:
-            bill.name = data["name"]
-            bill.code = data["code"]
-            bill.text = data["text"]
-            bill.bill_type = data["bill_type"]
-            bill.state = data["state"]
-            bill.county = data["county"]
-            db.session.add(bill)
-            db.session.commit()
-            return make_response(bill.to_dict(), 201)
-        except ValueError:
-            return make_response({"error": "Invalid bill"}, 400)
 
+        if not all(key in data for key in ("username", "password")):
+            return make_response({"error": "Username and password are required"}, 400)
 
-class BillsByCode(Resource):
-    def get(self, code):
-        bills = Bill.query.filter_by(code=code).all()
-        if bills:
+        username = data["username"]
+        password = data["password"]
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.authenticate(password):
             return make_response(
-                [bill.to_dict() for bill in bills],
-                200,
+                {"message": "Login successful", "user_id": user.id}, 200
             )
         else:
-            return make_response({"error": "Bills not found"}, 404)
-
-
-class Polls(Resource):
-    def get(self):
-        return make_response(
-            [poll.to_dict() for poll in Poll.query.all()],
-            200,
-        )
-
-
-class PollsByElection(Resource):
-    def get(self, election_id):
-        polls = Poll.query.filter_by(election_id=election_id).all()
-        if polls:
-            return make_response(
-                [poll.to_dict() for poll in polls],
-                200,
-            )
-        else:
-            return make_response({"error": "Polls not found"}, 404)
-
-
-class Propositions(Resource):
-    def get(self):
-        return make_response(
-            [proposition.to_dict() for proposition in Proposition.query.all()],
-            200,
-        )
-
-
-class PropositionsByElection(Resource):
-    def get(self, election_id):
-        propositions = Proposition.query.filter_by(election_id=election_id).all()
-        if propositions:
-            return make_response(
-                [proposition.to_dict() for proposition in propositions],
-                200,
-            )
-        else:
-            return make_response({"error": "Propositions not found"}, 404)
+            return make_response({"error": "Invalid credentials"}, 401)
 
 
 # API Resource Routing
@@ -233,14 +217,8 @@ class PropositionsByElection(Resource):
 
 api.add_resource(Elections, "/elections")
 api.add_resource(ElectionById, "/elections/<int:id>")
-api.add_resource(Representatives, "/representatives")
-api.add_resource(RepresentativesByState, "/representatives/<string:state>")
-api.add_resource(Bills, "/bills")
-api.add_resource(BillsByCode, "/bills/<string:code>")
-api.add_resource(Polls, "/polls")
-api.add_resource(PollsByElection, "/polls/<int:election_id>")
-api.add_resource(Propositions, "/propositions")
-api.add_resource(PropositionsByElection, "/propositions/<int:election_id>")
+api.add_resource(Login, "/login")
+api.add_resource(Users, "/users")
 
 
 if __name__ == "__main__":
