@@ -16,7 +16,6 @@ class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
-    phone = db.Column(db.String, unique=True)
     password = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
@@ -99,6 +98,7 @@ class Voter(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
+    phone_number = db.Column(db.String)
     street_line1 = db.Column(db.String)
     street_line2 = db.Column(db.String)
     city = db.Column(db.String)
@@ -149,6 +149,7 @@ class Partner(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
+    phone_number = db.Column(db.String)
     title = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.String)
@@ -185,6 +186,7 @@ class Member(db.Model, SerializerMixin):
     enterprise_id = db.Column(db.Integer, db.ForeignKey("enterprises.id"))
     administration_id = db.Column(db.Integer, db.ForeignKey("administrations.id"))
     profile_photo = db.Column(db.String)
+    phone_number = db.Column(db.String)
     title = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.String)
@@ -223,6 +225,7 @@ class Admin(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
+    phone_number = db.Column(db.String)
     title = db.Column(db.String)
     state = db.Column(db.String)
     county = db.Column(db.String)
@@ -252,6 +255,7 @@ class SuperAdmin(db.Model, SerializerMixin):
         db.Integer, db.ForeignKey("accounts.id"), unique=True, nullable=False
     )
     profile_photo = db.Column(db.String)
+    phone_number = db.Column(db.String)
     title = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     last_updated = db.Column(db.DateTime, server_default=db.func.now())
